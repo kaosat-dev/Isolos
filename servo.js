@@ -2,7 +2,7 @@ const {cube, cylinder} = require('../../core/scad-api/').primitives3d
 const {color} = require('../../core/scad-api/').color
 const {rotate, translate, mirror} = require('../../core/scad-api/').transformations
 const {union, difference} = require('../../core/scad-api/').booleanOps
-
+const {CSG} = require('../../core/scad-api').csg
 module.exports = function servo (params) {
   const defaults = {
     outlines: true
@@ -50,5 +50,11 @@ module.exports = function servo (params) {
   })
   const positives = union(body, gearSpline)
   // if we want 'outlines' only, we omit the holes, this is usefull to subtract this shape for example
-  return params.outlines ? positives : difference(positives, ...mountHoles)
+  const result = params.outlines ? positives : difference(positives, ...mountHoles)
+  result.properties.gearSplineEndConnector = new CSG.Connector(
+    [0, 0, 30],    // point
+    [0, 0, 1],             // axis
+    [0, 1, 0]              // normal
+  )
+  return result
 }
