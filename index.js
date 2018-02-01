@@ -1,14 +1,15 @@
-const {square, circle} = require('../../core/scad-api/').primitives2d
-const {cube, cylinder} = require('../../core/scad-api/').primitives3d
-const {color} = require('../../core/scad-api/').color
-const {hull, chain_hull} = require('../../core/scad-api/').transformations
-const {rectangular_extrude, linear_extrude, rotate_extrude} = require('../../core/scad-api/').extrusions
-const {rotate, translate, mirror} = require('../../core/scad-api/').transformations
-const {union, difference} = require('../../core/scad-api/').booleanOps
+const {square, circle} = require('@jscad/csg/api').primitives2d
+const {cube, cylinder} = require('@jscad/csg/api').primitives3d
+const {color} = require('@jscad/csg/api').color
+const {hull, chain_hull} = require('@jscad/csg/api').transformations
+const {rectangular_extrude, linear_extrude, rotate_extrude} = require('@jscad/csg/api').extrusions
+const {rotate, translate, mirror} = require('@jscad/csg/api').transformations
+const {union, difference} = require('@jscad/csg/api').booleanOps
 
-const foo = require('@jscad/scad-api')
 const servo = require('./servo')
 const adafruitI2CPwmDriver = require('./pwmDriver')
+const bodyTop = require('./bodyTop')
+const bodyBottom = require('./bodyBottom')
 
 const numLegs = 4
 const bottomThickness = 4
@@ -33,11 +34,12 @@ const legMountPositions = legMountAngles
 
 const numAssemblyMounts = 8
 const assemblyMountDia = 8
-const assemblyMountsOffset = (bodyOd/2 - bodyId/2) / 2 + bodyId/2
+const assemblyMountsOffset = (bodyOd / 2 - bodyId / 2) / 2 + bodyId / 2
 const assemblyMountBoltDia = 3
+const assemblyMountAnglesOffset = Math.PI * 1.125
 const assemblyMountAngles = Array(numAssemblyMounts)
   .fill(0)
-  .map((val, index) => index * (Math.PI * 2) / numAssemblyMounts)
+  .map((val, index) => index * (Math.PI * 2) / numAssemblyMounts + assemblyMountAnglesOffset)
 const assemblyMountPositions = assemblyMountAngles
   .map(angle => [Math.cos(angle) * assemblyMountsOffset, Math.sin(angle) * assemblyMountsOffset])
 
@@ -64,96 +66,36 @@ const servoParams = {
   gearBlock2Offset: 8.8
 }
 
-function bodyBottom () {
-  const legMounts = legMountPositions.map(function (position) {
-    return translate(position, circle({r: legMountDia * 0.5, center: true}))
-  })
+const paramDefaults = {
+  bodyId,
+  bodyOd,
 
-  const legMountShapes = union(
-    hull(...legMounts.filter((x, i) => i % 2 === 0)),
-    hull(...legMounts.filter((x, i) => i % 2 !== 0))
-  )
-  const bodyOuter = difference(
-    circle({r: bodyOd / 2, center: true, fn: 48}),
-    circle({r: bodyId / 2, center: true, fn: 48})
-  )
+  legMountPositions,
+  legMountAngles,
+  legMountDia,
+  legsOffset,
+  legMountsHeight,
 
-  const bodyShape = union(
-    bodyOuter
-  )
-  const offsetWithAngle = (angle, offset) => [Math.cos(angle) * offset, Math.sin(angle) * offset]
+  bottomThickness,
+  assemblyMountBoltDia,
+  assemblyMountPositions,
+  assemblyMountAngles,
 
-  const servoMountHoleDiaReduced = servoParams.mountHoleDia * 0.5
-  const servoMountHoles1 = legMountAngles
-    .map((angle, index) => {
-      const offset = offsetWithAngle(angle, legsOffset + 4)
-      return translate([offset[0], offset[1]],
-        cylinder({d: servoMountHoleDiaReduced, h: legMountsHeight * 10, center: true})
-      )
-    })
-  const servoMountHoles2 = legMountAngles
-    .map((angle, index) => {
-      const offset = offsetWithAngle(angle, legsOffset - 24)
-      return translate([offset[0], offset[1]],
-        cylinder({d: servoMountHoleDiaReduced, h: legMountsHeight * 10, center: true})
-      )
-    })
-
-  const mountHole = color('gray', cylinder({h: bottomThickness, d: assemblyMountBoltDia}))
-  const mountHoles = assemblyMountPositions.map((position, index) => {
-    const angle = assemblyMountAngles[index] * 180 / Math.PI
-    return translate(position, rotate([0, 0, angle], mountHole))
-  })
-
-  // return bodyShape
-  return difference(
-    union(
-      linear_extrude({height: bottomThickness}, bodyShape),
-      linear_extrude({height: legMountsHeight}, legMountShapes)
-    ),
-    ...servoMountHoles1,
-    ...servoMountHoles2,
-    ...mountHoles
-  )
+  assemblyMountDia,
+  servoParams
 }
 
-function bodyTop (servos) {
-  const legMounts = legMountPositions.map(function (position) {
-    return translate(position, circle({r: legMountDia * 0.5, center: true}))
-  })
-
-  const legMountShapes = union(
-    hull(...legMounts.filter((x, i) => i % 2 === 0)),
-    hull(...legMounts.filter((x, i) => i % 2 !== 0))
-  )
-  const bodyOuter = difference(
-    circle({r: bodyOd / 2, center: true, fn: 48}),
-    circle({r: bodyId / 2, center: true, fn: 48})
-  )
-
-  const bodyShape = union(
-    bodyOuter
-  )
-
-  const servoHoles = servos.map(servo => translate([0, 0, 4.2], servo))
-  const mountHole = color('gray', cylinder({h: bottomThickness, d: assemblyMountBoltDia}))
-  const mountHoles = assemblyMountPositions.map((position, index) => {
-    const angle = assemblyMountAngles[index] * 180 / Math.PI
-    return translate(position, rotate([0, 0, angle], mountHole))
-  })
-
-  return difference(
-    union(
-      linear_extrude({height: bottomThickness}, bodyShape),
-      linear_extrude({height: bottomThickness}, legMountShapes)
-    ),
-    cylinder({d: bodyId, h: bottomThickness}),
-    ...servoHoles,
-    ...mountHoles
-  )
+function getParameterDefinitions () {
+  return [
+    { name: 'showTop', type: 'checkbox', checked: true, caption: 'Show top:' },
+    { name: 'showBottom', type: 'checkbox', checked: false, caption: 'Show bottom:' },
+    { name: 'showMounts', type: 'checkbox', checked: true, caption: 'Show mounts:' },
+    { name: 'showServos', type: 'checkbox', checked: true, caption: 'Show servos:' },
+    { name: 'showPwmDriver', type: 'checkbox', checked: true, caption: 'Show pwm driver:' }
+  ]
 }
 
-function main () {
+function main (params) {
   const servos = legMountPositions
     .map((position, index) => {
       const angle = legMountAngles[index] * 180 / Math.PI
@@ -162,54 +104,23 @@ function main () {
       )).translate([0, 0, 26.5])
     })
 
-  console.log(servos[0])
-  const assemblyMount = color('gray', 
-      difference(
-        cylinder({h: 27 - bottomThickness, d: assemblyMountDia}),
-        cylinder({h: 27 - bottomThickness, d: assemblyMountBoltDia})
-      )
-    )
-    .translate([0, 0, bottomThickness])
+  const _assemblyMount = require('./assemblyMount')(paramDefaults)
   const assemblyMounts = assemblyMountPositions.map((position, index) => {
     const angle = assemblyMountAngles[index] * 180 / Math.PI
-    return translate(position, rotate([0, 0, angle], assemblyMount))
+    return translate(position, rotate([0, 0, angle], _assemblyMount))
   })
-  return [
-    bodyBottom().subtract(servos),
-    translate([0, 0, 27], bodyTop(servos)),
-    // just for visual help
-    ...servos,
-    ...assemblyMounts,
-    translate([0, 0, legMountsHeight], rotate([0, 0, 45], adafruitI2CPwmDriver()))
-  ]
 
-  const legMounts = legMountPositions.map(function (position) {
-    return translate(position, circle({r: legMountDia * 0.5, center: true}))
-  })
-  const bodyHalfBaseShape = chain_hull(...legMounts)
-  const bodyBaseShape = hull(union(bodyHalfBaseShape, mirror([0, 1, 0], bodyHalfBaseShape)))
+  const _bodyBottom = bodyBottom(paramDefaults, servos)
+  let results = []
+  results = params.showTop ? results.concat([translate([0, 0, 27], bodyTop(paramDefaults, servos))]) : results
+  results = params.showBottom ? results.concat([_bodyBottom]) : results
+  results = params.showMounts ? results.concat(assemblyMounts) : results
 
-  // return bodyHalfBaseShape
-  const bodyHalf = chain_hull(...legMounts)
-    .subtract(legMountPositions.map(position => translate(position, circle({r: legMountBoltDia * 0.5, center: true}))))
-  const fullBody = union(bodyHalf, mirror([0, 1, 0], bodyHalf))
+   // just for visual help
+  results = params.showServos ? results.concat(servos) : results
+  results = params.showPwmDriver ? results.concat(translate([0, 0, legMountsHeight], rotate([0, 0, 45], adafruitI2CPwmDriver()))) : results
 
-  const cover = color([0.4, 0.9, 0.9, 0.5],
-    linear_extrude({height: bottomThickness}, bodyBaseShape)
-      .translate([0, 0, 70])
-  )
-
-  return [
-    linear_extrude({height: legMountsHeight}, fullBody, bodyBaseShape)
-      .union(linear_extrude({height: bottomThickness}, bodyBaseShape))
-      .subtract(servos),
-
-    // ...servos,
-    mirror([0, 1, 0], servos),
-    translate([0, 0, bottomThickness], adafruitI2CPwmDriver()),
-    cover
-  ]
-  // return legMounts
+  return results
 }
 
-module.exports = main
+module.exports = {main, getParameterDefinitions}

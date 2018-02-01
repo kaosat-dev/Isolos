@@ -1,8 +1,11 @@
-const {cube, cylinder} = require('../../core/scad-api/').primitives3d
-const {color} = require('../../core/scad-api/').color
-const {rotate, translate, mirror} = require('../../core/scad-api/').transformations
-const {union, difference} = require('../../core/scad-api/').booleanOps
-const {CSG} = require('../../core/scad-api').csg
+const {cube, cylinder} = require('@jscad/csg/api').primitives3d
+const {color} = require('@jscad/csg/api').color
+const {rotate, translate, mirror} = require('@jscad/csg/api').transformations
+const {union, difference} = require('@jscad/csg/api').booleanOps
+const {CSG} = require('@jscad/csg/api').csg
+
+const foo = require('@jscad/csg/api')
+
 module.exports = function servo (params) {
   const defaults = {
     outlines: true

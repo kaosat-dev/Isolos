@@ -1,5 +1,5 @@
 
-const {CSG} = require('../../core/scad-api').csg
+const {CSG} = require('@jscad/csg/api').csg
 
 const addConnector = (name, point, axis, normal, object) => {
   const connector = new CSG.Connector(point, axis, normal)
