@@ -12,15 +12,16 @@ const bodyTop = require('./bodyTop')
 const bodyBottom = require('./bodyBottom')
 
 const numLegs = 4
-const bottomThickness = 4
+const plateThickness = 4
+const plateOffset = 27
 
 const legMountsHeight = 7.8
 const legMountBoltDia = 3
 const legMountDia = 20
 
 //
-const bodyId = 45 * 2
-const bodyOd = 55 * 2
+const bodyId = 90
+const bodyOd = 110
 
 const legsOffset = 55
 const angleS = (Math.PI * 2) / numLegs
@@ -43,7 +44,7 @@ const assemblyMountAngles = Array(numAssemblyMounts)
 const assemblyMountPositions = assemblyMountAngles
   .map(angle => [Math.cos(angle) * assemblyMountsOffset, Math.sin(angle) * assemblyMountsOffset])
 
-console.log('legs', numLegs, 'legMountPositions', legMountPositions)
+// console.log('legs', numLegs, 'legMountPositions', legMountPositions)
 const offsetWithAngle = (angle, offset) => [Math.cos(angle) * offset, Math.sin(angle) * offset]
 
 // params for a sg90 servo
@@ -67,6 +68,8 @@ const servoParams = {
 }
 
 const paramDefaults = {
+  quality: 120,
+  robotName: 'ISOLOS',
   bodyId,
   bodyOd,
 
@@ -76,7 +79,9 @@ const paramDefaults = {
   legsOffset,
   legMountsHeight,
 
-  bottomThickness,
+  plateThickness,
+  plateOffset,
+
   assemblyMountBoltDia,
   assemblyMountPositions,
   assemblyMountAngles,
@@ -87,33 +92,61 @@ const paramDefaults = {
 
 function getParameterDefinitions () {
   return [
-    { name: 'showTop', type: 'checkbox', checked: true, caption: 'Show top:' },
+    { name: 'mainParams', type: 'group', caption: 'Main parameters' }, 
+
+    { name: 'bodyId', type: 'float', initial: paramDefaults.bodyId, caption: 'bodyId', min: 50, max: 200 },
+    { name: 'bodyOd', type: 'float', initial: paramDefaults.bodyOd, caption: 'bodyOd', min: 80, max: 200 },
+
+    { name: 'plateThickness', type: 'float', initial: paramDefaults.plateThickness, caption: 'plateThickness', min: 1, max: 15 },
+    { name: 'plateOffset', type: 'float', initial: paramDefaults.plateOffset, caption: 'plateOffset', min: 1, max: 100 },
+
+    { name: 'visualParams', type: 'group', caption: 'Visual toggles' }, 
+
+    { name: 'showTop', type: 'checkbox', checked: false, caption: 'Show top:' },
     { name: 'showBottom', type: 'checkbox', checked: false, caption: 'Show bottom:' },
     { name: 'showMounts', type: 'checkbox', checked: true, caption: 'Show mounts:' },
-    { name: 'showServos', type: 'checkbox', checked: true, caption: 'Show servos:' },
-    { name: 'showPwmDriver', type: 'checkbox', checked: true, caption: 'Show pwm driver:' }
+    { name: 'showServos', type: 'checkbox', checked: false, caption: 'Show servos:' },
+    { name: 'showPwmDriver', type: 'checkbox', checked: false, caption: 'Show pwm driver:' }
   ]
 }
 
 function main (params) {
+  console.log('initial params', params)
+  params = Object.assign({}, paramDefaults, params)
+  /*let foo = servo(servoParams)
+  let c = color([1, 0, 0], cube({size: [0.5, 0.5, 10]}))
+  c = c.connectTo(
+    foo.properties.gearSplineEndConnector,
+    c.properties.cube.facecenters[0],
+    false,
+    0
+  )
+
+  let c2 = color([1, 0, 0], cube({size: [0.5, 0.5, 10]}))
+  c2 = c2.connectTo(
+    foo.properties.gearSplineBaseConnector,
+    c2.properties.cube.facecenters[0],
+    false,
+    0
+  )
+  return [foo, c, c2]*/
   const servos = legMountPositions
     .map((position, index) => {
       const angle = legMountAngles[index] * 180 / Math.PI
       return translate(position, rotate([0, 0, angle],
         mirror([0, 0, 1], translate([-10, 0, 0], servo(servoParams)))
-      )).translate([0, 0, 26.5])
+      )).translate([0, 0, params.plateOffset - 0.5])
     })
 
-  const _assemblyMount = require('./assemblyMount')(paramDefaults)
+  const _assemblyMount = require('./assemblyMount')(params)
   const assemblyMounts = assemblyMountPositions.map((position, index) => {
     const angle = assemblyMountAngles[index] * 180 / Math.PI
     return translate(position, rotate([0, 0, angle], _assemblyMount))
   })
 
-  const _bodyBottom = bodyBottom(paramDefaults, servos)
   let results = []
-  results = params.showTop ? results.concat([translate([0, 0, 27], bodyTop(paramDefaults, servos))]) : results
-  results = params.showBottom ? results.concat([_bodyBottom]) : results
+  results = params.showTop ? results.concat([translate([0, 0, params.plateOffset], bodyTop(params, servos))]) : results
+  results = params.showBottom ? results.concat([bodyBottom(params, servos)]) : results
   results = params.showMounts ? results.concat(assemblyMounts) : results
 
    // just for visual help

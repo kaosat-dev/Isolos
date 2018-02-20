@@ -12,7 +12,7 @@ module.exports = function bodyTop (params, servos) {
   const {
     bodyId, bodyOd,
     legMountPositions, legMountDia,
-    bottomThickness,
+    plateThickness,
     assemblyMountBoltDia,
     assemblyMountPositions,
     assemblyMountAngles
@@ -37,8 +37,8 @@ module.exports = function bodyTop (params, servos) {
   const servoHoles = servos.map(servo => translate([0, 0, 4.2], servo))
   const mountHole = color('gray',
     union(
-      cylinder({h: bottomThickness, d: assemblyMountBoltDia}),
-      translate([0, 0, bottomThickness], mirror([0, 0, 1], bolt({type: 'm3'}, 10)))
+      cylinder({h: plateThickness, d: assemblyMountBoltDia}),
+      translate([0, 0, plateThickness], mirror([0, 0, 1], bolt({type: 'm3'}, 10)))
     )
   )
   const mountHoles = assemblyMountPositions.map((position, index) => {
@@ -47,13 +47,13 @@ module.exports = function bodyTop (params, servos) {
   })
 
   const bodyAndLegMounts = union(
-    linear_extrude({height: bottomThickness}, bodyShape),
-    linear_extrude({height: bottomThickness}, legMountShapes)
+    linear_extrude({height: plateThickness}, bodyShape),
+    linear_extrude({height: plateThickness}, legMountShapes)
   )
 
   const top = difference(
     bodyAndLegMounts,
-    cylinder({d: bodyId, h: bottomThickness}),
+    cylinder({d: bodyId, h: plateThickness}),
     ...servoHoles,
     ...mountHoles
   )

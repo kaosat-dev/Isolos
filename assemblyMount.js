@@ -3,12 +3,12 @@ const {color} = require('@jscad/csg/api').color
 const {difference} = require('@jscad/csg/api').booleanOps
 
 module.exports = function assemblyMount (params) {
-  const {bottomThickness, assemblyMountDia, assemblyMountBoltDia} = params
+  const {plateThickness, plateOffset, assemblyMountDia, assemblyMountBoltDia} = params
   return color('gray',
     difference(
-      cylinder({h: 27 - bottomThickness, d: assemblyMountDia}),
-      cylinder({h: 27 - bottomThickness, d: assemblyMountBoltDia})
+      cylinder({h: plateOffset - plateThickness, d: assemblyMountDia}),
+      cylinder({h: plateOffset - plateThickness, d: assemblyMountBoltDia})
     )
   )
-    .translate([0, 0, bottomThickness])
+    .translate([0, 0, plateThickness])
 }
