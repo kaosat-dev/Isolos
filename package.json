@@ -1,7 +1,7 @@
 {
-  "name": "jscad-isolos",
+  "name": "@kaosat-dev/isolos",
   "version": "0.0.1",
-  "description": "Isolos robot body",
+  "description": "Isolos quadruped robot",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -12,7 +12,8 @@
     "robot",
     "robot",
     "quadruped",
-    "parametric"
+    "parametric",
+    "isolos"
   ],
   "author": "Mark 'kaosat-dev' Moissette & sons",
   "license": "MIT",
