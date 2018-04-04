@@ -1,8 +1,8 @@
-const {cube, cylinder} = require('@jscad/csg/api').primitives3d
-const {color} = require('@jscad/csg/api').color
-const {rotate, translate, mirror} = require('@jscad/csg/api').transformations
-const {union, difference} = require('@jscad/csg/api').booleanOps
-const {CSG} = require('@jscad/csg/api').csg
+const {cube, cylinder} = require('jscad-tree-experiment').api.primitives3d
+const {color} = require('jscad-tree-experiment').api.color
+const {rotate, translate, mirror} = require('jscad-tree-experiment').api.transformations
+const {union, difference} = require('jscad-tree-experiment').api.booleanOps
+// const {CSG} = require('jscad-tree-experiment').api.csg
 
 module.exports = function servo (params) {
   const defaults = {
@@ -57,7 +57,7 @@ module.exports = function servo (params) {
   // if we want 'outlines' only, we omit the holes, this is usefull to subtract this shape for example
   const result = params.outlines ? positives : difference(positives, ...mountHoles)
 
-  result.properties.gearSplineEndConnector = new CSG.Connector(
+  /*result.properties.gearSplineEndConnector = new CSG.Connector(
     [0, 10, dimensions[2]], // point
     [0, 1, 0], // axis
     [0, 0, -1] // normal
@@ -67,10 +67,10 @@ module.exports = function servo (params) {
     [0, -gearSplineOffset, dimensions[2] + gearBlockHeight], // point
     [0, 1, 0], // axis
     [0, 0, -1] // normal
-  )
+  )*/
 
-  result.properties.gearBlock = translate([gearSplineOffset, 0, dimensions[2]], gearBlock)
-  result.properties.mountHoles = mountHoles
+  // result.properties.gearBlock = translate([gearSplineOffset, 0, dimensions[2]], gearBlock)
+  // result.properties.mountHoles = mountHoles
 
   return result
 }

@@ -1,10 +1,4 @@
-const {square, circle} = require('@jscad/csg/api').primitives2d
-const {cube, cylinder} = require('@jscad/csg/api').primitives3d
-const {color} = require('@jscad/csg/api').color
-const {hull, chain_hull} = require('@jscad/csg/api').transformations
-const {rectangular_extrude, linear_extrude, rotate_extrude} = require('@jscad/csg/api').extrusions
-const {rotate, translate, mirror} = require('@jscad/csg/api').transformations
-const {union, difference} = require('@jscad/csg/api').booleanOps
+const {rotate, translate, mirror} = require('jscad-tree-experiment').api.transformations
 
 const servo = require('./servo')
 const adafruitI2CPwmDriver = require('./pwmDriver')
@@ -104,8 +98,8 @@ function getParameterDefinitions () {
 
     { name: 'showTop', type: 'checkbox', checked: false, caption: 'Show top:' },
     { name: 'showBottom', type: 'checkbox', checked: false, caption: 'Show bottom:' },
-    { name: 'showMounts', type: 'checkbox', checked: true, caption: 'Show mounts:' },
-    { name: 'showServos', type: 'checkbox', checked: false, caption: 'Show servos:' },
+    { name: 'showMounts', type: 'checkbox', checked: false, caption: 'Show mounts:' },
+    { name: 'showServos', type: 'checkbox', checked: true, caption: 'Show servos:' },
     { name: 'showPwmDriver', type: 'checkbox', checked: false, caption: 'Show pwm driver:' }
   ]
 }
@@ -133,15 +127,15 @@ function main (params) {
   const servos = legMountPositions
     .map((position, index) => {
       const angle = legMountAngles[index] * 180 / Math.PI
-      return translate(position, rotate([0, 0, angle],
+      return translate([0, 0, params.plateOffset - 0.5], translate(position, rotate([0, 0, angle],
         mirror([0, 0, 1], translate([-10, 0, 0], servo(servoParams)))
-      )).translate([0, 0, params.plateOffset - 0.5])
+      )))
     })
 
   const _assemblyMount = require('./assemblyMount')(params)
   const assemblyMounts = assemblyMountPositions.map((position, index) => {
     const angle = assemblyMountAngles[index] * 180 / Math.PI
-    return translate(position, rotate([0, 0, angle], _assemblyMount))
+    return translate([position[0], position[1], 11.5], rotate([0, 0, angle], _assemblyMount))
   })
 
   let results = []

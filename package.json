@@ -18,6 +18,7 @@
   "author": "Mark 'kaosat-dev' Moissette & sons",
   "license": "MIT",
   "dependencies": {
-    "@jscad/csg": "0.5.2"
+    "@jscad/csg": "0.5.2",
+    "jscad-tree-experiment": "github:kaosat-dev/jscad-tree-experiments"
   }
 }

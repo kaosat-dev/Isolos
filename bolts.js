@@ -1,8 +1,8 @@
-const {color} = require('@jscad/csg/api').color
-const {square, circle} = require('@jscad/csg/api').primitives2d
-const {linear_extrude} = require('@jscad/csg/api').extrusions
-const {union, difference} = require('@jscad/csg/api').booleanOps
-const {translate} = require('@jscad/csg/api').transformations
+const {color} = require('jscad-tree-experiment').api.color
+const {square, circle} = require('jscad-tree-experiment').api.primitives2d
+const {linear_extrude} = require('jscad-tree-experiment').api.extrusions
+const {union, difference} = require('jscad-tree-experiment').api.booleanOps
+const {translate} = require('jscad-tree-experiment').api.transformations
 
 const dimensions = {
   'm3': {

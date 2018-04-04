@@ -1,11 +1,11 @@
-const {circle} = require('@jscad/csg/api').primitives2d
-const {cylinder} = require('@jscad/csg/api').primitives3d
-const {color} = require('@jscad/csg/api').color
-const {vector_text} = require('@jscad/csg/api').text
-const {hull} = require('@jscad/csg/api').transformations
-const {linear_extrude, rectangular_extrude, rotate_extrude} = require('@jscad/csg/api').extrusions
-const {rotate, translate, scale, center, mirror} = require('@jscad/csg/api').transformations
-const {union, difference} = require('@jscad/csg/api').booleanOps
+const {circle} = require('jscad-tree-experiment').api.primitives2d
+const {cylinder} = require('jscad-tree-experiment').api.primitives3d
+const {color} = require('jscad-tree-experiment').api.color
+const {vector_text} = require('jscad-tree-experiment').api.text
+const {hull} = require('jscad-tree-experiment').api.transformations
+const {linear_extrude, rectangular_extrude, rotate_extrude} = require('jscad-tree-experiment').api.extrusions
+const {rotate, translate, scale, center, mirror} = require('jscad-tree-experiment').api.transformations
+const {union, difference} = require('jscad-tree-experiment').api.booleanOps
 
 const bolt = require('./bolts')
 

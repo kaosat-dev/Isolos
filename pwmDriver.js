@@ -1,6 +1,6 @@
 
-const {color} = require('@jscad/csg/api').color
-const {cube} = require('@jscad/csg/api').primitives3d
+const {color} = require('jscad-tree-experiment').api.color
+const {cube} = require('jscad-tree-experiment').api.primitives3d
 
 module.exports = function adafruitI2CPwmDriver () {
   const dimensions = [62.23, 25.908, 1]
